@@ -1,29 +1,25 @@
+# TO-DO
 # define an imagePlane object (class) : done 
 # have a render passes list that consists of ImagePlane names : done
 # have a consturctor class, which would from a given name would return a imageplane object with predefined settings for that image plane : done
-# you need a function that would create an image plane on a mantra node from a given imageplane object
-# you need another function that would re-construct an imageplane object from the settings on a mantra node.
-# you need a way to display those image planes to the user to give them a choice
-# comment properly 
-# tidy it up
-# git
-# pep
+# you need a function that would create an image plane on a mantra node from a given imageplane object : done
+# you need another function that would re-construct an imageplane object from the settings on a mantra node : done
+# you need a way to display those image planes to the user to give them a choice : done
+# I need another tool, when clicked will display the existing image planes on a ROP (for informational purposes)
 
-# import sys
+"""
+import sys
+path = "E:\\project\\project-houdini_scripting\\scripts\\addImagePlanes"
 
-# path = "E:\project\project-houdini_scripting\scripts"
-# path = path.replace("\\", "/")
+x = sys.path.insert(0, path)
+import addImagePlanes as ai
+reload(ai)
 
-# x = sys.path.insert(0, path)
+ai.MantaImagePlaneCreator()
+"""
 
-# import addImagePlanes as ai
-# reload(ai)
-
-# selected = hou.selectedNodes()[0]
-# ai.MantaImagePlaneCreator(selected)
 
 import hou
-import time
 
 class ImagePlaneGlobalVariables(object):
     renderPasses = ["Cf", "Of", "Af", "P", "Pz", "N", "Render_Time", "Shading_Samples", "Pixel_Samples", 
@@ -120,12 +116,32 @@ class MantaImagePlaneCreator(object):
     def __init__(self, selectedNodes = None):
         self.imagePlaneList = ImagePlaneGlobalVariables.renderPasses
         self.selection = hou.ui.selectFromList(choices=self.imagePlaneList)
+        self.check()
 
+    def check(self):
+        messageTitle = "Error Creating Image Planes"
+
+        if not hou.selectedNodes():
+            hou.ui.displayMessage("No Mantra ROP is Selected, Please make a selection to continue.", title = messageTitle)
+            return False
+
+        proceed = True
         for i in hou.selectedNodes():
-            if isinstance(i, hou.RopNode):
-                self.run(i)
-            else:
+            if not isinstance(i, hou.RopNode):
                 print "%s is not a Rop Node" %i.name()
+                proceed = False
+
+        if not proceed:
+            hou.ui.displayMessage("Please make sure you have 'only' Mantra ROP's selected.", title = messageTitle)
+            return False
+
+        self.main()
+
+
+    def main(self):
+        '''operaions to be run on the selected nodes list, when the tool is envoked'''
+        for i in hou.selectedNodes():
+            self.run(i)
 
 
     def run(self, mantraNode):
